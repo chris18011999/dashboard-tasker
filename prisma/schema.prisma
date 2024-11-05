@@ -17,12 +17,6 @@ enum TaskState {
   done
 }
 
-model Column {
-  title String
-  id    Int    @id @default(autoincrement())
-  tasks Task[]
-}
-
 model Task {
   id          Int       @id @default(autoincrement())
   title       String
@@ -32,6 +26,5 @@ model Task {
   createDate  DateTime  @default(now())
   updateDate  DateTime  @updatedAt
   status      TaskState @default(todo)
-
-  Column Column[]
+  preferredIndex Int @default(autoincrement())
 }

@@ -1,9 +1,8 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   images: {
     remotePatterns: [
       {
+        
         hostname: "openweathermap.org",
         pathname: "/img/wn/*"
       }
