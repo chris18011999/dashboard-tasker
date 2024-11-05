@@ -59,7 +59,7 @@ export function WeatherInfo() {
 
   useEffect(() => {
     getLocation()
-  }, [getLocation])
+  }, [])
 
   const weather = weatherData ? WMO.get(weatherData.current.weather_code) : null
 

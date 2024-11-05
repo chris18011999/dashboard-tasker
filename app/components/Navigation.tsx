@@ -37,7 +37,7 @@ export const SidebarNavigation = () => {
   ];
 
   return (
-    <Sidebar className="w-64 border-r">
+    <Sidebar className="w-64 border-r" collapsible="offcanvas">
       <SidebarHeader>
         <h1 className="py-2 text-xl font-semibold text-center">Dashboard</h1>
       </SidebarHeader>
