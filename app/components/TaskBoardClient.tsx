@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import type { OnDragEndResponder } from "@hello-pangea/dnd";
 import { MoreHorizontal, Plus } from "lucide-react";
-import { useFormState } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -67,7 +67,7 @@ export function TaskBoardClient({
     }
   };
 
-  const handleDragEnd = (result: any) => {
+  const handleDragEnd: OnDragEndResponder = (result) => {
     if (!result.destination) return;
 
     const newStatus = result.destination.droppableId as TaskState;
@@ -170,7 +170,7 @@ function TaskColumn({
   status: TaskState;
   title: string;
   tasks: Task[];
-  handleDeleteTask: (taskId: number) => Promise<any>;
+  handleDeleteTask: (taskId: number) => Promise<void>;
 }) {
   return (
     <div className="flex flex-col">
@@ -215,7 +215,7 @@ function TaskCard({
 }: {
   task: Task;
   index: number;
-  handleDeleteTask: (taskId: number) => Promise<any>;
+  handleDeleteTask: (taskId: number) => Promise<void>;
 }) {
 
   const badgeStatus: Record<TaskState, BadgeProps['variant']> = {

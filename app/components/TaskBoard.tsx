@@ -1,13 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { TaskBoardClient } from "./TaskBoardClient";
-import { cache } from "react";
-
-// Task type definition
-type Task = {
-  id: string;
-  title: string;
-  description: string;
-};
 
 export const TaskBoard = async () => {
   const client = new PrismaClient();
@@ -16,8 +8,6 @@ export const TaskBoard = async () => {
       preferredIndex: "asc",
     },
   })
-
-  console.dir(tasks, { depth: Infinity });
 
   return <TaskBoardClient initialTasks={tasks} />;
 };

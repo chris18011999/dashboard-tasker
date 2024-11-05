@@ -18,6 +18,7 @@ export const BatteryInfo = () => {
     const setupBattery = async () => {
       if ("getBattery" in navigator) {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const batteryManager = await (navigator as any).getBattery();
 
           const updateBatteryStatus = () => {

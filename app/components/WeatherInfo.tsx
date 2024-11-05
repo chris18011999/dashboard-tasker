@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { TIMES, WMO } from "@/constants"
+import { WMO } from "@/constants"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
@@ -59,7 +59,7 @@ export function WeatherInfo() {
 
   useEffect(() => {
     getLocation()
-  }, [])
+  }, [getLocation])
 
   const weather = weatherData ? WMO.get(weatherData.current.weather_code) : null
 

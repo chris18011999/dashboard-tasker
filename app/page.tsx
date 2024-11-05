@@ -20,7 +20,7 @@ export default function HomePage() {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {components.map((Component, index) => {
         return (
-          <AnimatePresence>
+          <AnimatePresence key={Component.name}>
             <motion.div
               transition={{ delay: 0.05 * index }}
               variants={{

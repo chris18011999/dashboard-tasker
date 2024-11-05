@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReloadIcon } from "@radix-ui/react-icons";
-import { revalidateTag } from "next/cache";
 import Image from "next/image";
 import { revalidateWeatherTag } from "./WeatherInfoActions";
 

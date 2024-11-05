@@ -8,14 +8,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { PrismaClient } from "@prisma/client";
-import { CheckSquare, LayoutDashboard, Loader } from "lucide-react";
+import { CheckSquare, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getCount } from "./NavigationActions";
-
-const client = new PrismaClient();
 
 export const SidebarNavigation = () => {
   const pathname = usePathname();

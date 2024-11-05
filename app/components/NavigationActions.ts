@@ -12,6 +12,8 @@ export async function getCount() {
       }
     });
   } catch(e) {
+    console.warn(e);
+
     return '?'
   }
 }

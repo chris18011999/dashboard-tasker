@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TIMES } from "@/constants";
 
 interface QuoteOfTheDayResponse {
   q: string;
@@ -21,7 +20,7 @@ export async function QuoteOfTheDay() {
       </CardHeader>
       <CardContent>
         <blockquote className="border-l-2 pl-6">
-          <p className="italic">"{quote.q}"</p>
+          <p className="italic">&quot;{quote.q}&quot;</p>
           <footer className="mt-2 text-sm text-muted-foreground">
             ~ {quote.a} ~
           </footer>
