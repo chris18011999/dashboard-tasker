@@ -107,13 +107,13 @@ export function TaskBoardClient({
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="flex flex-col gap-4 h-full">
         <div className="flex space-x-4">
-          <Button size="sm" variant="destructive" onClick={reopenAllTasks}>
+          {tasks.length > 0 && <Button size="sm" variant="destructive" onClick={reopenAllTasks}>
             REOPEN ALL TASKS
-          </Button>
+          </Button>}
           <Dialog open={isAddingTask} onOpenChange={setIsAddingTask}>
             <DialogTrigger asChild>
               <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" /> Add task
+                <Plus className="h-4 w-4 mr-1"/>Add task
               </Button>
             </DialogTrigger>
             <DialogContent>

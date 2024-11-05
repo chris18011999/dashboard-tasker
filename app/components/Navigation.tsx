@@ -7,6 +7,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { CheckSquare, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
@@ -64,6 +65,7 @@ export const SidebarNavigation = () => {
           })}
         </SidebarMenu>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   );
 };
