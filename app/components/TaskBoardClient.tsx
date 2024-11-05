@@ -35,6 +35,7 @@ import * as motion from "framer-motion/client";
 import { AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
+import { groupBy } from "@/lib/groupby";
 
 const COLUMN_TITLES: Record<TaskState, string> = {
   todo: "To do",
@@ -56,7 +57,7 @@ export function TaskBoardClient({
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [isAddingTask, setIsAddingTask] = useState(false);
 
-  const groupedTasks = Object.groupBy(tasks, (task) => task.status);
+  const groupedTasks = groupBy(tasks, (task: Task) => task.status);
 
   const handleDeleteTask = async (taskId: number) => {
     const result = await server_handleDeleteTask(taskId);
