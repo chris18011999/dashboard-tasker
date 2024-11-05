@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Dashboard | Tasks",
@@ -17,22 +18,20 @@ export const metadata: Metadata = {
 export default function TasksPage() {
   return (
     <div className="flex flex-col gap-3">
+      <SidebarTrigger size={"icon"} />
       <Breadcrumb>
         <BreadcrumbList>
-          <BreadcrumbItem>
-            <SidebarTrigger size={"icon"} />
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-          <BreadcrumbLink>
-          <Link href="/">Home</Link>
+          <BreadcrumbLink href="/">
+            Home
           </BreadcrumbLink>
-          </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>Tasks</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
-      <TaskBoard />;
+      <h1 className="text-2xl font-bold">Your tasks</h1>
+
+      <TaskBoard />
     </div>
   );
 }

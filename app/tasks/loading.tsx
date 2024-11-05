@@ -1,22 +1,20 @@
+import { cn } from "@/utils";
+
 export default function LoadingPage() {
   return (
-    <div className="flex flex-col gap-4 h-full">
-      <div className="flex space-x-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
-          <div className="flex flex-col">
-            <h3 className="font-semibold text-lg mb-4">title</h3>
-            <div className="flex-1 bg-muted/50 rounded-lg p-4 flex flex-col gap-3"></div>
-          </div>
-          <div className="flex flex-col">
-            <h3 className="font-semibold text-lg mb-4">title</h3>
-            <div className="flex-1 bg-muted/50 rounded-lg p-4 flex flex-col gap-3"></div>
-          </div>
-          <div className="flex flex-col">
-            <h3 className="font-semibold text-lg mb-4">title</h3>
-            <div className="flex-1 bg-muted/50 rounded-lg p-4 flex flex-col gap-3"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn("animate-spin")}
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
   );
 }

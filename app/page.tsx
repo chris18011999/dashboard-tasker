@@ -21,6 +21,8 @@ export default function HomePage() {
     <div className="flex flex-col gap-3">
       <SidebarTrigger size={"icon"} />
 
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {components.map((Component, index) => {
           return (
