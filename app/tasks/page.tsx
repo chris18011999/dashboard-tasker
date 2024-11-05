@@ -8,8 +8,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Dashboard | Tasks",
