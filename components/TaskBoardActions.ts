@@ -12,8 +12,7 @@ const getPrismaClient = cache(() => prisma);
 
 export async function handleAddTask(
   title: string,
-  description: string,
-  due?: Date
+  description: string
 ) {
   const user = await currentUser();
 

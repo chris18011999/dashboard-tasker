@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import type { OnDragEndResponder } from "@hello-pangea/dnd";
-import { CalendarIcon, MoreHorizontal, Plus, UserIcon } from "lucide-react";
+import { CalendarIcon, MoreHorizontal, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -99,9 +99,8 @@ export function TaskBoardClient({
   const addTask = async (formData: FormData) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const due = formData.get("due")?.valueOf() as Date;
 
-    const newTask = await handleAddTask(title, description, due);
+    const newTask = await handleAddTask(title, description);
     if (newTask) {
       setTasks((prevTasks) => [...prevTasks, newTask]);
       setIsAddingTask(false);
