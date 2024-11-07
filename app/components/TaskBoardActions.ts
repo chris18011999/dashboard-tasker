@@ -9,7 +9,7 @@ const prisma = new PrismaClient()
 // Use a cached Prisma client to avoid multiple instances
 const getPrismaClient = cache(() => prisma)
 
-export async function handleAddTask(title: string, description: string) {
+export async function handleAddTask(title: string, description: string, due?: Date) {
   const client = getPrismaClient()
   const task = await client.task.create({
     data: {
@@ -17,6 +17,7 @@ export async function handleAddTask(title: string, description: string) {
       description,
       status: "todo",
       preferredIndex: await getNextPreferredIndex("todo"),
+      due
     },
   })
 

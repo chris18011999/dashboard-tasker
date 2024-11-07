@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import type { OnDragEndResponder } from "@hello-pangea/dnd";
-import { MoreHorizontal, Plus } from "lucide-react";
+import { CalendarIcon, MoreHorizontal, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -36,6 +36,9 @@ import { AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { groupBy } from "@/lib/groupby";
+import { Calendar } from "@/components/ui/calendar";
+import Linkify from "linkify-react";
+import { cn } from "@/utils";
 
 const COLUMN_TITLES: Record<TaskState, string> = {
   todo: "To do",
@@ -96,7 +99,9 @@ export function TaskBoardClient({
   const addTask = async (formData: FormData) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const newTask = await handleAddTask(title, description);
+    const due = formData.get("due")?.valueOf() as Date;
+
+    const newTask = await handleAddTask(title, description, due);
     if (newTask) {
       setTasks((prevTasks) => [...prevTasks, newTask]);
       setIsAddingTask(false);
@@ -107,13 +112,16 @@ export function TaskBoardClient({
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="flex flex-col gap-4 h-full">
         <div className="flex space-x-4">
-          {tasks.length > 0 && <Button size="sm" variant="destructive" onClick={reopenAllTasks}>
-            REOPEN ALL TASKS
-          </Button>}
+          {tasks.length > 0 && (
+            <Button size="sm" variant="destructive" onClick={reopenAllTasks}>
+              REOPEN ALL TASKS
+            </Button>
+          )}
           <Dialog open={isAddingTask} onOpenChange={setIsAddingTask}>
             <DialogTrigger asChild>
               <Button size="sm">
-                <Plus className="h-4 w-4 mr-1"/>Add task
+                <Plus className="h-4 w-4 mr-1" />
+                Add task
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -124,16 +132,18 @@ export function TaskBoardClient({
             </DialogContent>
           </Dialog>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
-          {Object.entries(COLUMN_TITLES).map(([status, title]) => (
-            <TaskColumn
-              key={status}
-              status={status as TaskState}
-              title={title}
-              handleDeleteTask={handleDeleteTask}
-              tasks={groupedTasks[status as TaskState] || []}
-            />
-          ))}
+        <div className="overflow-x-auto overflow-y-hidden flex-1">
+          <div className="grid grid-cols-[repeat(3,1fr)] gap-4 h-full">
+            {Object.entries(COLUMN_TITLES).map(([status, title]) => (
+              <TaskColumn
+                key={status}
+                status={status as TaskState}
+                title={title}
+                handleDeleteTask={handleDeleteTask}
+                tasks={groupedTasks[status as TaskState] || []}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </DragDropContext>
@@ -145,8 +155,17 @@ function AddTaskForm({
 }: {
   onSubmit: (formData: FormData) => Promise<void> | void;
 }) {
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [loading, setLoading] = useState(false);
+
+  const _onSubmit = async (data: FormData) => {
+    setLoading(true);
+    await onSubmit(data);
+    setLoading(false);
+  };
+
   return (
-    <form action={onSubmit}>
+    <form action={_onSubmit}>
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
           <Label htmlFor="title">Title</Label>
@@ -156,8 +175,18 @@ function AddTaskForm({
           <Label htmlFor="description">Description</Label>
           <Textarea name="description" id="description" />
         </div>
+        <div className="grid gap-2">
+          <Label htmlFor="due">Due date</Label>
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={setDate}
+            className="rounded-md border"
+          />
+          <input type="hidden" name="due" value={date?.toString()} />
+        </div>
       </div>
-      <Button type="submit">Add Task</Button>
+      <Button type="submit">{loading ? "Adding task..." : "Add Task"}</Button>
     </form>
   );
 }
@@ -174,14 +203,16 @@ function TaskColumn({
   handleDeleteTask: (taskId: number) => Promise<void>;
 }) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-w-[300px]">
       <h3 className="font-semibold text-lg mb-4">{title}</h3>
       <Droppable droppableId={status}>
-        {(provided) => (
+        {(provided, snap) => (
           <div
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className="flex-1 bg-muted/50 rounded-lg p-4 flex flex-col gap-3"
+            className={cn("flex-1 bg-muted/50 rounded-lg p-4 flex flex-col gap-3", 
+              snap.isDraggingOver && "bg-muted/80"
+            )}
           >
             {tasks.length > 0 ? (
               tasks
@@ -190,6 +221,7 @@ function TaskColumn({
                 )
                 .map((task, index) => (
                   <TaskCard
+                    stateTitle={title}
                     key={task.id}
                     task={task}
                     index={index}
@@ -198,7 +230,7 @@ function TaskColumn({
                 ))
             ) : (
               <span className="text-muted-foreground">
-                Nothing {title.toLowerCase()}
+                Nothing in &quot;{title}&quot;
               </span>
             )}
             {provided.placeholder}
@@ -212,19 +244,29 @@ function TaskColumn({
 function TaskCard({
   task,
   index,
+  stateTitle,
   handleDeleteTask,
 }: {
   task: Task;
   index: number;
+  stateTitle: string;
   handleDeleteTask: (taskId: number) => Promise<void>;
 }) {
+  const badgeStatus: Record<TaskState, BadgeProps["variant"]> = {
+    todo: "outline",
+    done: "default",
+    inProgress: "secondary",
+  };
 
-  const badgeStatus: Record<TaskState, BadgeProps['variant']> = {
-    todo: 'outline',
-    done: 'default',
-    inProgress: 'secondary'
+  const _handleDeleteTask = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLoading(true);
+    await handleDeleteTask(task.id);
+    setIsLoading(false);
+  };
 
-  }
+  const [isLoading, setIsLoading] = useState(false);
+
   return (
     <Draggable draggableId={task.id.toString()} key={task.id} index={index}>
       {(provided) => (
@@ -243,39 +285,46 @@ function TaskCard({
                       <CardTitle className="text-md font-bold">
                         {task.title}
                       </CardTitle>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => handleDeleteTask(task.id)}
-                          >
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {task.status == TaskState.done && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={_handleDeleteTask}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </CardHeader>
                   {task.description && (
                     <CardContent className="px-4">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground truncate line-clamp-1 text-ellipsis">
                         {task.description}
                       </p>
                     </CardContent>
                   )}
                 </Card>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="w-full max-w-[700px]">
                 <DialogHeader className="flex flex-col items-start">
                   <DialogTitle>Task: {task.title}</DialogTitle>
 
-                  <Badge variant={badgeStatus[task.status]}>{task.status}</Badge>
+                  <div className="flex items-center gap-2">
+                    <span>Status:</span>
+                    <Badge variant={badgeStatus[task.status]}>
+                      {stateTitle || task.status}
+                    </Badge>
+                  </div>
                 </DialogHeader>
-                <DialogDescription>
+                <DialogDescription className="flex flex-col gap-4">
                   {task.imageUrl && (
                     <Image
                       src={task.imageUrl}
@@ -284,8 +333,41 @@ function TaskCard({
                       height={200}
                     />
                   )}
-                  {task.description && <p>{task.description}</p>}
-                  {task.due && <p>Due: {task.due.toLocaleString()}</p>}
+                  <Linkify
+                    options={{
+                      nl2br: true,
+                    }}
+                  >
+                    {task.description && <p>{task.description}</p>}
+                  </Linkify>
+                  {task.due && (
+                    <p className="text-xs italic flex items-center gap-2">
+                      <CalendarIcon size={14} />
+                      {task.due.toLocaleString()}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <Button variant={"destructive"} onClick={_handleDeleteTask}>
+                      {isLoading ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className={cn("animate-spin")}
+                        >
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        </svg>
+                      ) : (
+                        "Delete"
+                      )}
+                    </Button>
+                  </div>
                 </DialogDescription>
               </DialogContent>
             </Dialog>
