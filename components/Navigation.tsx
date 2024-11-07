@@ -14,9 +14,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getCount } from "./NavigationActions";
+import { useClerk, useUser } from "@clerk/nextjs";
+import { Avatar, AvatarImage } from "./ui/avatar";
+import { Button } from "./ui/button";
+import { ExitIcon } from "@radix-ui/react-icons";
 
 export const SidebarNavigation = () => {
   const pathname = usePathname();
+  const { user } = useUser();
+  const { signOut } = useClerk();
+
+  const handleSignOut = async () => {
+    await signOut({ redirectUrl: '/' })
+  }
 
   const [taskCount, setTaskCount] = useState<number | '?' | null>();
 
@@ -40,7 +50,16 @@ export const SidebarNavigation = () => {
   return (
     <Sidebar className="w-64 border-r" collapsible="offcanvas">
       <SidebarHeader>
-        <h1 className="py-2 text-xl font-semibold text-center">Dashboard</h1>
+        <h1 className="py-2 text-lg flex items-center gap-3 justify-start font-semibold">
+          <Avatar>
+            <AvatarImage src={user?.imageUrl} />
+          </Avatar>
+          {user?.fullName}
+
+          <Button className='ms-auto size-10' variant={'ghost'}  onClick={handleSignOut}>
+            <ExitIcon/>
+          </Button>
+        </h1>
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>

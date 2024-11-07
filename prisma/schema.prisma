@@ -18,13 +18,14 @@ enum TaskState {
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String?
-  imageUrl    String?
-  due         DateTime  @default(now())
-  createDate  DateTime  @default(now())
-  updateDate  DateTime  @updatedAt
-  status      TaskState @default(todo)
-  preferredIndex Int @default(autoincrement())
+  id             Int       @id @default(autoincrement())
+  title          String
+  description    String?
+  imageUrl       String?
+  due            DateTime  @default(now())
+  createDate     DateTime  @default(now())
+  updateDate     DateTime  @updatedAt
+  status         TaskState @default(todo)
+  preferredIndex Int       @default(autoincrement())
+  ownerId        String    @default("")
 }

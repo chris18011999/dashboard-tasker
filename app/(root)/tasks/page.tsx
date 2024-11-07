@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { TaskBoard } from "../components/TaskBoard";
+import { TaskBoard } from "@/components/TaskBoard";
 import {
   Breadcrumb,
   BreadcrumbItem,

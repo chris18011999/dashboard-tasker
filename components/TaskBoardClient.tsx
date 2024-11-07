@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import type { OnDragEndResponder } from "@hello-pangea/dnd";
-import { CalendarIcon, MoreHorizontal, Plus } from "lucide-react";
+import { CalendarIcon, MoreHorizontal, Plus, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -210,7 +210,8 @@ function TaskColumn({
           <div
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className={cn("flex-1 bg-muted/50 rounded-lg p-4 flex flex-col gap-3", 
+            className={cn(
+              "flex-1 bg-muted/50 rounded-lg p-4 flex flex-col gap-3",
               snap.isDraggingOver && "bg-muted/80"
             )}
           >
@@ -306,9 +307,9 @@ function TaskCard({
                   </CardHeader>
                   {task.description && (
                     <CardContent className="px-4">
-                      <p className="text-sm text-muted-foreground truncate line-clamp-1 text-ellipsis">
+                      <div className="text-sm text-muted-foreground truncate line-clamp-1 text-ellipsis">
                         {task.description}
-                      </p>
+                      </div>
                     </CardContent>
                   )}
                 </Card>
@@ -333,6 +334,8 @@ function TaskCard({
                       height={200}
                     />
                   )}
+                </DialogDescription>
+                <div>
                   <Linkify
                     options={{
                       nl2br: true,
@@ -340,35 +343,35 @@ function TaskCard({
                   >
                     {task.description && <p>{task.description}</p>}
                   </Linkify>
-                  {task.due && (
-                    <p className="text-xs italic flex items-center gap-2">
-                      <CalendarIcon size={14} />
-                      {task.due.toLocaleString()}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-3">
-                    <Button variant={"destructive"} onClick={_handleDeleteTask}>
-                      {isLoading ? (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className={cn("animate-spin")}
-                        >
-                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                        </svg>
-                      ) : (
-                        "Delete"
-                      )}
-                    </Button>
+                </div>
+                {task.due && (
+                  <div className="text-xs italic flex items-center gap-2">
+                    <CalendarIcon size={14} />
+                    {task.due.toLocaleString()}
                   </div>
-                </DialogDescription>
+                )}
+                <div className="flex items-center gap-3">
+                  <Button variant={"destructive"} onClick={_handleDeleteTask}>
+                    {isLoading ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className={cn("animate-spin")}
+                      >
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>
+                    ) : (
+                      "Delete"
+                    )}
+                  </Button>
+                </div>
               </DialogContent>
             </Dialog>
           </motion.div>

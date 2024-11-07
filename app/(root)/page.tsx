@@ -1,14 +1,14 @@
 import { Suspense } from "react";
 
-import { CurrentTime } from "./components/CurrentTime";
-import { WeatherInfo } from "./components/WeatherInfo";
-import { BatteryInfo } from "./components/BatteryInfo";
-import { QuoteOfTheDay } from "./components/QuoteOfTheDay";
 import * as motion from "framer-motion/client";
 import { AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Metadata } from "next";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { CurrentTime } from "@/components/CurrentTime";
+import { WeatherInfo } from "@/components/WeatherInfo";
+import { BatteryInfo } from "@/components/BatteryInfo";
+import { QuoteOfTheDay } from "@/components/QuoteOfTheDay";
 
 const components = [CurrentTime, WeatherInfo, BatteryInfo, QuoteOfTheDay];
 
@@ -26,7 +26,7 @@ export default function HomePage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {components.map((Component, index) => {
           return (
-            <AnimatePresence key={Component.name}>
+            <AnimatePresence key={index}>
               <motion.div
                 transition={{ delay: 0.05 * index }}
                 variants={{
