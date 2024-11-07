@@ -35,6 +35,24 @@ export async function handleAddTask(
   return task;
 }
 
+export async function revalidateTasks() {
+  const user = await currentUser();
+
+  if (!user) {
+    throw new Error("Must be authenticated to execute this action!");
+  }
+
+  const client = getPrismaClient();
+  const tasks = await client.task.findMany({
+    where: {
+      ownerId: user.id,
+    },
+  });
+
+  revalidatePath("/tasks");
+  return tasks;
+}
+
 export async function resetAllTasksToTodo() {
   const client = getPrismaClient();
   const user = await currentUser();

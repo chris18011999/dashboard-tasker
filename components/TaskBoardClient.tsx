@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import type { OnDragEndResponder } from "@hello-pangea/dnd";
 import { CalendarIcon, MoreHorizontal, Plus } from "lucide-react";
@@ -28,6 +28,7 @@ import {
   handleDeleteTask as server_handleDeleteTask,
   resetAllTasksToTodo,
   updateTaskStatus,
+  revalidateTasks as server_revalidateTasks,
 } from "./TaskBoardActions";
 import { Task, TaskState } from "@prisma/client";
 
@@ -39,6 +40,7 @@ import { groupBy } from "@/lib/groupby";
 import { Calendar } from "@/components/ui/calendar";
 import Linkify from "linkify-react";
 import { cn } from "@/utils";
+import { Skeleton } from "@nextui-org/skeleton";
 
 const COLUMN_TITLES: Record<TaskState, string> = {
   todo: "To do",
@@ -59,6 +61,7 @@ export function TaskBoardClient({
 }) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [isAddingTask, setIsAddingTask] = useState(false);
+  const [isRevalidating, setIsRevalidating] = useState(false);
 
   const groupedTasks = groupBy(tasks, (task: Task) => task.status);
 
@@ -68,6 +71,20 @@ export function TaskBoardClient({
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
     } else {
       console.error("Failed to delete task:", result.error);
+    }
+  };
+
+  const revalidateTasks = async () => {
+    if (document.visibilityState == "visible") {
+      setIsRevalidating(true);
+      try {
+        const result = await server_revalidateTasks();
+        setTasks(result);
+      } catch (e) {
+        console.error("Failed to revalidate tasks:", e);
+      } finally {
+        setIsRevalidating(false);
+      }
     }
   };
 
@@ -107,6 +124,14 @@ export function TaskBoardClient({
     }
   };
 
+  useEffect(() => {
+    document.addEventListener("visibilitychange", revalidateTasks);
+
+    return () => {
+      document.removeEventListener("visibilitychange", revalidateTasks);
+    };
+  });
+
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="flex flex-col gap-4 h-full">
@@ -135,6 +160,7 @@ export function TaskBoardClient({
           <div className="grid grid-cols-[repeat(3,1fr)] gap-4 h-full">
             {Object.entries(COLUMN_TITLES).map(([status, title]) => (
               <TaskColumn
+                isRevalidating={isRevalidating}
                 key={status}
                 status={status as TaskState}
                 title={title}
@@ -195,48 +221,59 @@ function TaskColumn({
   title,
   tasks,
   handleDeleteTask,
+  isRevalidating,
 }: {
   status: TaskState;
   title: string;
   tasks: Task[];
   handleDeleteTask: (taskId: number) => Promise<void>;
+  isRevalidating: boolean;
 }) {
   return (
     <div className="flex flex-col min-w-[300px]">
       <h3 className="font-semibold text-lg mb-4">{title}</h3>
-      <Droppable droppableId={status}>
-        {(provided, snap) => (
-          <div
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-            className={cn(
-              "flex-1 bg-muted/50 rounded-lg p-4 flex flex-col gap-3",
-              snap.isDraggingOver && "bg-muted/80"
-            )}
-          >
-            {tasks.length > 0 ? (
-              tasks
-                .sort(
-                  (a, b) => (a.preferredIndex || 0) - (b.preferredIndex || 0)
-                )
-                .map((task, index) => (
-                  <TaskCard
-                    stateTitle={title}
-                    key={task.id}
-                    task={task}
-                    index={index}
-                    handleDeleteTask={handleDeleteTask}
-                  />
-                ))
-            ) : (
-              <span className="text-muted-foreground">
-                Nothing in &quot;{title}&quot;
-              </span>
-            )}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
+      <Skeleton
+        className="rounded-sm flex-1"
+        classNames={{
+          base: "flex-1",
+          content: "h-full",
+        }}
+        isLoaded={!isRevalidating}
+      >
+        <Droppable droppableId={status}>
+          {(provided, snap) => (
+            <div
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+              className={cn(
+                "h-full bg-muted/50 rounded-lg p-4 flex flex-col gap-3",
+                snap.isDraggingOver && "bg-muted/80"
+              )}
+            >
+              {tasks.length > 0 ? (
+                tasks
+                  .sort(
+                    (a, b) => (a.preferredIndex || 0) - (b.preferredIndex || 0)
+                  )
+                  .map((task, index) => (
+                      <TaskCard
+                        stateTitle={title}
+                        key={task.id}
+                        task={task}
+                        index={index}
+                        handleDeleteTask={handleDeleteTask}
+                      />
+                  ))
+              ) : (
+                <span className="text-muted-foreground">
+                  Nothing in &quot;{title}&quot;
+                </span>
+              )}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </Skeleton>
     </div>
   );
 }
