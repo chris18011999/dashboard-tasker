@@ -20,15 +20,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  handleAddTask,
-  handleDeleteTask as server_handleDeleteTask,
-  resetAllTasksToTodo,
-  updateTaskStatus,
-  revalidateTasks as server_revalidateTasks,
+  handleDeleteTask as server_handleDeleteTask, updateTaskStatus,
+  revalidateTasks as server_revalidateTasks
 } from "./TaskBoardActions";
 import { Task, TaskState } from "@prisma/client";
 
@@ -37,10 +31,10 @@ import { AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { groupBy } from "@/lib/groupby";
-import { Calendar } from "@/components/ui/calendar";
 import Linkify from "linkify-react";
 import { cn } from "@/utils";
-import { Skeleton } from "@nextui-org/skeleton";
+import { toast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 const COLUMN_TITLES: Record<TaskState, string> = {
   todo: "To do",
@@ -60,8 +54,6 @@ export function TaskBoardClient({
   initialTasks: Task[];
 }) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [isAddingTask, setIsAddingTask] = useState(false);
-  const [isRevalidating, setIsRevalidating] = useState(false);
 
   const groupedTasks = groupBy(tasks, (task: Task) => task.status);
 
@@ -76,14 +68,24 @@ export function TaskBoardClient({
 
   const revalidateTasks = async () => {
     if (document.visibilityState == "visible") {
-      setIsRevalidating(true);
+      toast({
+        title: "Revalidating tasks",
+        variant: "default",
+        duration: 2000,
+      });
       try {
         const result = await server_revalidateTasks();
         setTasks(result);
-      } catch (e) {
+      } catch (e: unknown) {
+        const error = e as Error;
         console.error("Failed to revalidate tasks:", e);
-      } finally {
-        setIsRevalidating(false);
+
+        toast({
+          title: "Error revalidating tasks",
+          description: error.message,
+          variant: "destructive",
+          duration: 4000,
+        });
       }
     }
   };
@@ -106,24 +108,6 @@ export function TaskBoardClient({
     );
   };
 
-  const reopenAllTasks = () => {
-    resetAllTasksToTodo();
-    setTasks((prevTasks) =>
-      prevTasks.map((task) => ({ ...task, status: TaskState.todo }))
-    );
-  };
-
-  const addTask = async (formData: FormData) => {
-    const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
-
-    const newTask = await handleAddTask(title, description);
-    if (newTask) {
-      setTasks((prevTasks) => [...prevTasks, newTask]);
-      setIsAddingTask(false);
-    }
-  };
-
   useEffect(() => {
     document.addEventListener("visibilitychange", revalidateTasks);
 
@@ -136,31 +120,17 @@ export function TaskBoardClient({
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="flex flex-col gap-4 h-full">
         <div className="flex space-x-4">
-          {tasks.length > 0 && (
-            <Button size="sm" variant="destructive" onClick={reopenAllTasks}>
-              REOPEN ALL TASKS
-            </Button>
-          )}
-          <Dialog open={isAddingTask} onOpenChange={setIsAddingTask}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-1" />
-                Add task
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Task</DialogTitle>
-              </DialogHeader>
-              <AddTaskForm onSubmit={addTask} />
-            </DialogContent>
-          </Dialog>
+          <Button size="sm" asChild>
+            <Link href={"/tasks/new"}>
+              <Plus className="h-4 w-4 mr-1" />
+              Add task
+            </Link>
+          </Button>
         </div>
         <div className="overflow-x-auto overflow-y-hidden flex-1">
           <div className="grid grid-cols-[repeat(3,1fr)] gap-4 h-full">
             {Object.entries(COLUMN_TITLES).map(([status, title]) => (
               <TaskColumn
-                isRevalidating={isRevalidating}
                 key={status}
                 status={status as TaskState}
                 title={title}
@@ -175,105 +145,54 @@ export function TaskBoardClient({
   );
 }
 
-function AddTaskForm({
-  onSubmit,
-}: {
-  onSubmit: (formData: FormData) => Promise<void> | void;
-}) {
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [loading, setLoading] = useState(false);
-
-  const _onSubmit = async (data: FormData) => {
-    setLoading(true);
-    await onSubmit(data);
-    setLoading(false);
-  };
-
-  return (
-    <form action={_onSubmit}>
-      <div className="grid gap-4 py-4">
-        <div className="grid gap-2">
-          <Label htmlFor="title">Title</Label>
-          <Input name="title" id="title" required />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea name="description" id="description" />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="due">Due date</Label>
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            className="rounded-md border"
-          />
-          <input type="hidden" name="due" value={date?.toString()} />
-        </div>
-      </div>
-      <Button type="submit">{loading ? "Adding task..." : "Add Task"}</Button>
-    </form>
-  );
-}
-
 function TaskColumn({
   status,
   title,
   tasks,
   handleDeleteTask,
-  isRevalidating,
 }: {
   status: TaskState;
   title: string;
   tasks: Task[];
   handleDeleteTask: (taskId: number) => Promise<void>;
-  isRevalidating: boolean;
 }) {
   return (
     <div className="flex flex-col min-w-[300px]">
       <h3 className="font-semibold text-lg mb-4">{title}</h3>
-      <Skeleton
-        className="rounded-sm flex-1"
-        classNames={{
-          base: "flex-1",
-          content: "h-full",
-        }}
-        isLoaded={!isRevalidating}
-      >
-        <Droppable droppableId={status}>
-          {(provided, snap) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className={cn(
-                "h-full bg-muted/50 rounded-lg p-4 flex flex-col gap-3",
-                snap.isDraggingOver && "bg-muted/80"
-              )}
-            >
-              {tasks.length > 0 ? (
-                tasks
-                  .sort(
-                    (a, b) => (a.preferredIndex || 0) - (b.preferredIndex || 0)
-                  )
-                  .map((task, index) => (
-                      <TaskCard
-                        stateTitle={title}
-                        key={task.id}
-                        task={task}
-                        index={index}
-                        handleDeleteTask={handleDeleteTask}
-                      />
-                  ))
-              ) : (
-                <span className="text-muted-foreground">
-                  Nothing in &quot;{title}&quot;
-                </span>
-              )}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </Skeleton>
+
+      <Droppable droppableId={status}>
+        {(provided, snap) => (
+          <div
+            {...provided.droppableProps}
+            ref={provided.innerRef}
+            className={cn(
+              "h-full bg-muted/50 rounded-lg p-4 flex flex-col gap-3",
+              snap.isDraggingOver && "bg-muted/80"
+            )}
+          >
+            {tasks.length > 0 ? (
+              tasks
+                .sort(
+                  (a, b) => (a.preferredIndex || 0) - (b.preferredIndex || 0)
+                )
+                .map((task, index) => (
+                  <TaskCard
+                    stateTitle={title}
+                    key={task.id}
+                    task={task}
+                    index={index}
+                    handleDeleteTask={handleDeleteTask}
+                  />
+                ))
+            ) : (
+              <span className="text-muted-foreground">
+                Nothing in &quot;{title}&quot;
+              </span>
+            )}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
     </div>
   );
 }
