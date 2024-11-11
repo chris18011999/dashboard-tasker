@@ -1,40 +1,23 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import { DragDropContext, Droppable } from "@hello-pangea/dnd";
 import type { OnDragEndResponder } from "@hello-pangea/dnd";
-import { CalendarIcon, MoreHorizontal, Plus } from "lucide-react";
+import {
+  Plus
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  handleDeleteTask as server_handleDeleteTask, updateTaskStatus,
-  revalidateTasks as server_revalidateTasks
+  handleDeleteTask as server_handleDeleteTask,
+  updateTaskStatus,
+  revalidateTasks as server_revalidateTasks,
 } from "./TaskBoardActions";
 import { Task, TaskState } from "@prisma/client";
 
-import * as motion from "framer-motion/client";
-import { AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { groupBy } from "@/lib/groupby";
-import Linkify from "linkify-react";
 import { cn } from "@/utils";
 import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { TaskCard } from "./taskcard/TaskCard";
 
 const COLUMN_TITLES: Record<TaskState, string> = {
   todo: "To do",
@@ -194,144 +177,5 @@ function TaskColumn({
         )}
       </Droppable>
     </div>
-  );
-}
-
-function TaskCard({
-  task,
-  index,
-  stateTitle,
-  handleDeleteTask,
-}: {
-  task: Task;
-  index: number;
-  stateTitle: string;
-  handleDeleteTask: (taskId: number) => Promise<void>;
-}) {
-  const badgeStatus: Record<TaskState, BadgeProps["variant"]> = {
-    todo: "outline",
-    done: "default",
-    inProgress: "secondary",
-  };
-
-  const _handleDeleteTask = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsLoading(true);
-    await handleDeleteTask(task.id);
-    setIsLoading(false);
-  };
-
-  const [isLoading, setIsLoading] = useState(false);
-
-  return (
-    <Draggable draggableId={task.id.toString()} key={task.id} index={index}>
-      {(provided) => (
-        <AnimatePresence>
-          <motion.div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Card
-                  ref={provided.innerRef}
-                  {...provided.draggableProps}
-                  {...provided.dragHandleProps}
-                  className="bg-background"
-                >
-                  <CardHeader className="p-4">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-md font-bold">
-                        {task.title}
-                      </CardTitle>
-                      {task.status == TaskState.done && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onClick={_handleDeleteTask}
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </div>
-                  </CardHeader>
-                  {task.description && (
-                    <CardContent className="px-4">
-                      <div className="text-sm text-muted-foreground truncate line-clamp-1 text-ellipsis">
-                        {task.description}
-                      </div>
-                    </CardContent>
-                  )}
-                </Card>
-              </DialogTrigger>
-              <DialogContent className="w-full max-w-[700px]">
-                <DialogHeader className="flex flex-col items-start">
-                  <DialogTitle>Task: {task.title}</DialogTitle>
-
-                  <div className="flex items-center gap-2">
-                    <span>Status:</span>
-                    <Badge variant={badgeStatus[task.status]}>
-                      {stateTitle || task.status}
-                    </Badge>
-                  </div>
-                </DialogHeader>
-                <DialogDescription className="flex flex-col gap-4">
-                  {task.imageUrl && (
-                    <Image
-                      src={task.imageUrl}
-                      alt={task.title}
-                      width={500}
-                      height={200}
-                    />
-                  )}
-                </DialogDescription>
-                <div>
-                  <Linkify
-                    options={{
-                      nl2br: true,
-                    }}
-                  >
-                    {task.description && <p>{task.description}</p>}
-                  </Linkify>
-                </div>
-                {task.due && (
-                  <div className="text-xs italic flex items-center gap-2">
-                    <CalendarIcon size={14} />
-                    {task.due.toLocaleString()}
-                  </div>
-                )}
-                <div className="flex items-center gap-3">
-                  <Button variant={"destructive"} onClick={_handleDeleteTask}>
-                    {isLoading ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className={cn("animate-spin")}
-                      >
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                      </svg>
-                    ) : (
-                      "Delete"
-                    )}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </motion.div>
-        </AnimatePresence>
-      )}
-    </Draggable>
   );
 }

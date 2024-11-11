@@ -1,7 +1,4 @@
 import type { Metadata } from "next";
-import {
-  ClerkProvider
-} from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -14,8 +11,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <main className="flex-1 flex h-screen overflow-auto p-6 items-center justify-center">{children}</main>
-    </ClerkProvider>
+    <main className="flex-1 flex flex-col gap-6 h-screen overflow-auto p-6 items-center justify-center">
+      <h1 className="text-3xl font-bold">Welcome to Dashboard Tasker!</h1>
+      {children}
+    </main>
   );
 }
