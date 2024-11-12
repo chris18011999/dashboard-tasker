@@ -31,10 +31,10 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-hidden h-screen`}
         >
           <NextUIProvider>
-            <SidebarProvider>{children}</SidebarProvider>
+            <SidebarProvider className="flex-1 h-screen">{children}</SidebarProvider>
           </NextUIProvider>
 
           <Toaster />

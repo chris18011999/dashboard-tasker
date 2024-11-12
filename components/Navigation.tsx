@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { CheckSquare, LayoutDashboard } from "lucide-react";
 
+import * as motion from 'framer-motion/client';
+
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
@@ -13,8 +15,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail
+  SidebarRail,
 } from "@/components/ui/sidebar";
+import { AnimatePresence } from "framer-motion";
 
 const links = [
   {
@@ -29,17 +32,29 @@ const links = [
   },
 ];
 
-export function SidebarNavigation() {
+export default function SidebarNavigation() {
   const pathname = usePathname();
 
   return (
-    <Sidebar variant="inset"
+    <Sidebar
+      variant="inset"
       collapsible="icon"
-      className="dark border-r border-zinc-800 bg-zinc-900 transition-all duration-300 ease-in-out"
+      className="border-r border-slate-200 bg-white transition-all duration-300 ease-in-out"
     >
-      <SidebarHeader className="flex h-16 items-start justify-between  text-foreground">
-        <div className="flex items-center gap-2">
-          <UserButton></UserButton>
+      <SidebarHeader className="flex h-16 items-start justify-between">
+        <div className="flex items-center gap-2 p-2 w-full">
+          <UserButton
+            showName
+            appearance={{
+              elements: {
+                rootBox: "flex-1",
+                userButtonTrigger: "w-full",
+                userButtonBox: "flex-1 flex-row-reverse justify-end",
+                avatarBox:
+                  "rounded-full border-2 bg-red-500 border-violet-100 size-10 hover:border-violet-200 transition-colors duration-200",
+              },
+            }}
+          />
         </div>
       </SidebarHeader>
       <SidebarContent className="px-2">
@@ -56,23 +71,27 @@ export function SidebarNavigation() {
                   <Link
                     href={link.slug}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                      "flex items-center gap-3 rounded-full px-6 py-6 text-sm transition-all duration-200 ease-in-out",
                       isActive
-                        ? "bg-red-500/10 text-red-500"
-                        : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+                        ? "bg-violet-500 text-white shadow-lg shadow-violet-100"
+                        : "text-slate-600 hover:bg-violet-50 hover:text-violet-600"
                     )}
                   >
                     <link.icon
                       className={cn(
-                        "h-5 w-5",
-                        isActive ? "text-red-500" : "text-zinc-400"
+                        "size-5 transition-transform duration-200 ease-in-out",
+                        isActive
+                          ? "text-violet-500"
+                          : "text-slate-400"
                       )}
                     />
-                    <span className="transition-opacity duration-300 group-data-[collapsible=icon]:hidden">
+                    <span className="transition-all duration-200 ease-in-out group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:translate-x-2 group-hover:font-medium">
                       {link.label}
                     </span>
                     {isActive && (
-                      <div className="absolute -left-2 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-red-500" />
+                      <AnimatePresence>
+                        <motion.span initial={{ width: 0 }} animate={{ width: 4 }} exit={{width: 0}} className="absolute right-0 top-0 h-full w-1 rounded-full bg-violet-500 animate-pulse" />
+                      </AnimatePresence>
                     )}
                   </Link>
                 </SidebarMenuButton>
@@ -81,7 +100,7 @@ export function SidebarNavigation() {
           })}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarRail />
+      <SidebarRail className="bg-slate-50" />
     </Sidebar>
   );
 }

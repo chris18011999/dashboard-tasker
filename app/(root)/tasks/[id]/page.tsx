@@ -9,11 +9,11 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { PrismaClient, type TaskState } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
-import Linkify from "linkify-react";
 import { CalendarIcon } from "lucide-react";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
+import { TaskDetails } from "@/components/TaskDetails";
 
 export const metadata: Metadata = {
   title: "Dashboard | Tasks",
@@ -30,7 +30,7 @@ export default async function TasksPage({ params }: Params) {
   const user = await currentUser();
 
   if (!user) {
-    return <></>;
+    redirect("/sign-in");
   }
 
   const task = await client.task.findUnique({
@@ -66,9 +66,7 @@ export default async function TasksPage({ params }: Params) {
 
       <div className="flex items-center gap-2">
         <span>Status:</span>
-        <Badge variant={badgeStatus[task.status]}>
-          {task.status}
-        </Badge>
+        <Badge variant={badgeStatus[task.status]}>{task.status}</Badge>
       </div>
 
       <div className="flex flex-col gap-4">
@@ -81,15 +79,8 @@ export default async function TasksPage({ params }: Params) {
           />
         )}
       </div>
-      <div>
-        <Linkify
-          options={{
-            nl2br: true,
-          }}
-        >
-          {task.description && <p>{task.description}</p>}
-        </Linkify>
-      </div>
+      <TaskDetails task={task} />
+
       {task.due && (
         <div className="text-xs italic flex items-center gap-2">
           <CalendarIcon size={14} />

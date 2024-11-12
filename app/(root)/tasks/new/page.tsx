@@ -25,7 +25,7 @@ export default function TasksPage() {
         <BreadcrumbList>
           <BreadcrumbLink href="/">Home</BreadcrumbLink>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Tasks</BreadcrumbItem>
+          <BreadcrumbLink href="/tasks">Tasks</BreadcrumbLink>
           <BreadcrumbSeparator />
           <BreadcrumbItem>Add new task</BreadcrumbItem>
         </BreadcrumbList>

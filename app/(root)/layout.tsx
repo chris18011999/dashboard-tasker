@@ -1,4 +1,4 @@
-import { SidebarNavigation } from "@/components/Navigation";
+import SidebarNavigation from "@/components/Navigation";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
@@ -26,7 +26,7 @@ export default async function RootLayout({
       <SidebarNavigation />
 
       <SidebarInset className="!ml-3 transition-all !duration-300 ease-in-out">
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6">{children}</main>
       </SidebarInset>
     </>
   );
