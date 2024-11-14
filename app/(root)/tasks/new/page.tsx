@@ -12,12 +12,19 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { addTask } from "./actions";
+import TaskTagsSelector from "@/components/TaskTagsSelector";
+import { PrismaClient } from "@prisma/client";
 
 export const metadata: Metadata = {
   title: "Dashboard | Tasks",
 };
 
-export default function TasksPage() {
+const client = new PrismaClient();
+
+export default async function TasksPage() {
+  
+  const existingTags = await client.tag.findMany();
+
   return (
     <div className="flex flex-col gap-3 h-full">
       <SidebarTrigger size={"icon"} />
@@ -43,6 +50,7 @@ export default function TasksPage() {
             <Label htmlFor="description">Description</Label>
             <Textarea name="description" id="description" />
           </div>
+          <TaskTagsSelector existingTags={existingTags}/>
         </div>
         <Button type="submit">{"Add Task"}</Button>
       </form>

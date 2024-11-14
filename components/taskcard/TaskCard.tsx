@@ -1,6 +1,6 @@
 "use client";
 
-import type { Task } from "@prisma/client";
+import type { Prisma, Tag, Task } from "@prisma/client";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -14,12 +14,15 @@ import { Trash2Icon } from "lucide-react";
 
 import * as motion from "framer-motion/client";
 import Link from "next/link";
+
 export function TaskCard({
   task,
   index,
   handleDeleteTask,
 }: {
-  task: Task;
+  task: Prisma.TaskGetPayload<{
+    include: { tags: true }
+  }>;
   index: number;
   stateTitle: string;
   handleDeleteTask: (taskId: number) => Promise<void>;
@@ -55,8 +58,16 @@ export function TaskCard({
                         <div className="text-sm text-muted-foreground truncate line-clamp-1 text-ellipsis">
                           {task.description}
                         </div>
+                        {task.imageUrl && <img className="aspect-square object-cover rounded-sm" src={task.imageUrl} width={200} height={100} alt={task.title}/>}
                       </CardContent>
                     )}
+                    {task.tags && <ul>
+                      {task.tags.map(tag => {
+                        return <li key={tag.id}>
+                          <Link href={`/tasks/tag/${tag.id}`}>{tag.name}</Link>
+                        </li>
+                      })}  
+                    </ul>}
                   </Card>
                 </Link>
               </motion.div>

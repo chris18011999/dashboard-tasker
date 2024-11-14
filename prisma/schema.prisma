@@ -28,4 +28,12 @@ model Task {
   status         TaskState @default(todo)
   preferredIndex Int       @default(autoincrement())
   ownerId        String    @default("")
+  tags Tag[]
+}
+
+model Tag {
+  id Int @id @default(autoincrement())
+  name String
+
+  Task Task[]
 }

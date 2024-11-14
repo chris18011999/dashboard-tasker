@@ -26,6 +26,9 @@ export default async function TasksPage() {
   const tasks = await client.task.findMany({
     where: {
       ownerId: user.id
+    },
+    include: {
+      tags: true
     }
   })
 
