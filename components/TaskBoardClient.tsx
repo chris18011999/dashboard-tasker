@@ -11,7 +11,7 @@ import {
   updateTaskStatus,
   revalidateTasks as server_revalidateTasks,
 } from "./TaskBoardActions";
-import { Task, TaskState } from "@prisma/client";
+import { Task, TaskState, type Prisma } from "@prisma/client";
 
 import { groupBy } from "@/lib/groupby";
 import { cn } from "@/utils";
@@ -136,7 +136,9 @@ function TaskColumn({
 }: {
   status: TaskState;
   title: string;
-  tasks: Task[];
+  tasks: Prisma.TaskGetPayload<{
+    include: { tags: true }
+  }>[];
   handleDeleteTask: (taskId: number) => Promise<void>;
 }) {
   return (

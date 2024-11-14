@@ -1,6 +1,6 @@
 "use client";
 
-import type { Prisma, Tag, Task } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import {
   ContextMenu,
   ContextMenuContent,
